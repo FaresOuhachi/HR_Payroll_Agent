@@ -1,0 +1,85 @@
+# =============================================================================
+# Python Dependencies for HR Payroll Agent System
+# =============================================================================
+# Install: pip install -r requirements.txt
+#
+# Each section maps to a system component. Comments explain WHY each
+# dependency is needed and what concept it teaches.
+# =============================================================================
+
+# --- Core Web Framework ---
+# FastAPI: Modern async Python web framework built on Starlette + Pydantic
+# CONCEPT: FastAPI uses Python type hints for automatic request validation,
+#          serialization, and OpenAPI documentation generation.
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0      # ASGI server (async HTTP server for FastAPI)
+pydantic>=2.9                   # Data validation using Python type annotations
+pydantic-settings>=2.5          # Load settings from .env files into typed classes
+
+# --- Database ---
+# SQLAlchemy: Python ORM (Object-Relational Mapper)
+# CONCEPT: ORM maps Python classes to database tables, letting you query
+#          with Python instead of raw SQL. Async support via asyncpg driver.
+sqlalchemy[asyncio]>=2.0        # ORM with async support
+asyncpg>=0.30                   # Async PostgreSQL driver (fastest Python PG driver)
+alembic>=1.14                   # Database migration tool (version control for schemas)
+pgvector>=0.3                   # Python bindings for pgvector (vector operations)
+
+# --- LLM & Agent Orchestration ---
+# LangGraph: Framework for building stateful, multi-step AI agents
+# CONCEPT: Agents are programs where an LLM decides which actions to take.
+#          LangGraph models this as a state machine (graph) where:
+#          - Nodes = processing steps (LLM calls, tool executions)
+#          - Edges = transitions (including conditional routing)
+#          - State = data flowing through the graph (TypedDict)
+langchain>=0.3                  # LLM abstraction layer
+langchain-openai>=0.3           # OpenAI integration (used for embeddings)
+langchain-groq>=0.2             # Groq integration (ultra-fast LLM inference)
+groq>=0.12                      # Groq Python SDK (async client for summarization)
+langgraph>=0.2                  # Stateful agent graph framework
+langgraph-checkpoint-postgres>=2.0  # Persist agent state to PostgreSQL
+psycopg[binary]>=3.1               # PostgreSQL driver for checkpointing (psycopg v3)
+
+# --- RAG (Retrieval-Augmented Generation) ---
+# CONCEPT: RAG improves LLM accuracy by retrieving relevant documents
+#          before generating a response. Instead of relying on the LLM's
+#          training data, you feed it specific, up-to-date information.
+langchain-text-splitters>=0.3   # Split documents into chunks for embedding
+
+# --- Authentication ---
+# CONCEPT: JWT (JSON Web Tokens) enable stateless authentication.
+#          The server signs a token containing user identity + role,
+#          and the client sends it with every request. No session storage needed.
+python-jose[cryptography]>=3.3  # JWT creation and verification
+passlib[bcrypt]>=1.7            # Password hashing (bcrypt algorithm)
+
+# --- Caching ---
+# CONCEPT: Redis is an in-memory key-value store used for:
+#          - Caching expensive computations (embeddings, LLM responses)
+#          - Rate limiting (counting requests per time window)
+#          - Session state (active connections)
+redis>=5.2
+
+# --- WebSocket ---
+# CONCEPT: WebSockets enable bidirectional real-time communication.
+#          Unlike HTTP (request→response), WebSocket keeps a persistent
+#          connection open for streaming agent reasoning steps to the UI.
+websockets>=14.0
+
+# --- Observability ---
+# CONCEPT: Observability = Traces + Metrics + Logs
+#          - Traces: Follow a request through the entire system (spans)
+#          - Metrics: Numerical measurements (counters, histograms)
+#          - Logs: Structured event records (JSON for machine parsing)
+opentelemetry-api>=1.29         # OpenTelemetry tracing API
+opentelemetry-sdk>=1.29         # OpenTelemetry SDK implementation
+opentelemetry-instrumentation-fastapi>=0.50b0  # Auto-instrument FastAPI
+opentelemetry-exporter-otlp>=1.29  # Export traces to collectors
+structlog>=24.4                 # Structured logging (JSON output)
+prometheus-client>=0.21         # Expose metrics for Prometheus scraping
+langsmith>=0.2                  # LangSmith LLM observability (traces LangChain/LangGraph)
+
+# --- Testing ---
+pytest>=8.3
+pytest-asyncio>=0.24            # Test async code with pytest
+httpx>=0.28                     # Async HTTP client (for testing FastAPI)

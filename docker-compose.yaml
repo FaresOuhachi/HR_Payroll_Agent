@@ -1,0 +1,62 @@
+# =============================================================================
+# Docker Compose for HR Payroll Agent System
+# =============================================================================
+# CONCEPT: Docker Compose defines multi-container applications.
+# We need two services:
+#   1. PostgreSQL with pgvector extension (for both relational data AND vector search)
+#   2. Redis (for caching, rate limiting, and session state)
+#
+# WHY pgvector instead of a separate vector DB?
+#   - Fewer moving parts (one DB for everything)
+#   - ACID transactions across relational + vector data
+#   - Simpler ops in production
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 with pgvector extension
+  # ---------------------------------------------------------------------------
+  # pgvector adds vector similarity search to PostgreSQL, enabling:
+  #   - Store embeddings alongside relational data
+  #   - Cosine/L2/inner-product similarity queries
+  #   - HNSW indexes for fast approximate nearest neighbor search
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hr_payroll_db
+    environment:
+      POSTGRES_USER: hr_admin
+      POSTGRES_PASSWORD: hr_secret_2025
+      POSTGRES_DB: hr_payroll
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hr_admin -d hr_payroll"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis 7 — In-memory data store
+  # ---------------------------------------------------------------------------
+  # Used for:
+  #   - Caching LLM embeddings (avoid recomputing expensive embeddings)
+  #   - Caching agent responses (for repeated queries)
+  #   - Rate limiting (track request counts per user per window)
+  #   - Session state (active WebSocket sessions)
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: hr_payroll_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

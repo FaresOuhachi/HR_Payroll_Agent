@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Payroll Agent — System Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --surface: #161b22;
+            --border: #30363d;
+            --text: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent2: #3fb950;
+            --accent3: #d2a8ff;
+            --accent4: #f0883e;
+            --accent5: #f85149;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        header {
+            text-align: center;
+            padding: 2rem 1rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        header h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+        header p { color: var(--text-secondary); font-size: 0.95rem; }
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 0.5rem 1.2rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--surface);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .tab:hover { border-color: var(--accent); color: var(--text); }
+        .tab.active { border-color: var(--accent); background: #1f6feb22; color: var(--accent); }
+        .diagram-container {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .diagram-container h2 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--accent);
+        }
+        .diagram-container .desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+        .diagram { display: none; }
+        .diagram.active { display: block; }
+        .mermaid { text-align: center; }
+        .legend {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 1rem 1.5rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+        }
+        .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+        .legend-color {
+            width: 14px; height: 14px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>HR Payroll Agent — System Architecture</h1>
+    <p>Interactive diagrams showing full agent logic, data flows, and component communication</p>
+</header>
+
+<div class="tabs">
+    <button class="tab active" onclick="showDiagram('full')">Full System Flow</button>
+    <button class="tab" onclick="showDiagram('agent')">Agent Logic (LangGraph)</button>
+    <button class="tab" onclick="showDiagram('data')">Data Stores</button>
+    <button class="tab" onclick="showDiagram('components')">Component Map</button>
+    <button class="tab" onclick="showDiagram('websocket')">WebSocket Flow</button>
+</div>
+
+<!-- ===================================================================== -->
+<!-- DIAGRAM 1: Full System Flow (User → Response)                          -->
+<!-- ===================================================================== -->
+<div id="diagram-full" class="diagram active">
+    <div class="diagram-container">
+        <h2>Full Request Flow — User Input to Final Response</h2>
+        <p class="desc">Shows every step a user request goes through, from the browser to the agent and back.</p>
+        <pre class="mermaid">
+flowchart TB
+    subgraph BROWSER["Browser (Chat UI)"]
+        UI["User types message"]
+        WS_CLIENT["WebSocket Client<br/>(app.js)"]
+        RENDER["Render response +<br/>reasoning panel"]
+    end
+
+    subgraph FASTAPI["FastAPI Backend (src/main.py)"]
+        direction TB
+        WS_EP["WebSocket Endpoint<br/>/agents/ws/thread_id<br/>(src/api/websocket.py)"]
+        HTTP_EP["HTTP Endpoint<br/>POST /agents/execute<br/>(src/api/agents.py)"]
+        SSE_EP["SSE Endpoint<br/>POST /agents/stream<br/>(src/api/stream.py)"]
+
+        subgraph AUTH_LAYER["Authentication Layer"]
+            JWT["JWT Verification<br/>(src/auth/jwt.py)"]
+            RBAC["Role-Based Access Control<br/>(src/auth/rbac.py)"]
+        end
+
+        subgraph GUARD_IN["Input Guardrails (src/guardrails/)"]
+            PII_IN["PII Detection<br/>(SSN, credit card)"]
+            INJECTION["Prompt Injection<br/>Detection"]
+            LENGTH["Input Length<br/>Validation"]
+        end
+    end
+
+    subgraph AGENT_SYSTEM["Agent System (src/agents/)"]
+        direction TB
+        ROUTER["Router Agent<br/>(router_agent.py)<br/>Intent Classification"]
+        CALLBACK["Streaming Callback<br/>(callbacks.py)<br/>Real-time events"]
+
+        subgraph SPECIALIST["Specialist Agents"]
+            PAYROLL_A["Payroll Agent<br/>(payroll_agent.py)<br/>LangGraph StateGraph"]
+            COMPLIANCE_A["Compliance Agent<br/>Direct LLM call"]
+            GENERAL_A["General Agent<br/>Direct LLM call"]
+        end
+    end
+
+    subgraph TOOLS["Agent Tools (src/tools/)"]
+        direction TB
+        T1["get_employee_info"]
+        T2["calculate_net_pay"]
+        T3["calculate_gross_pay"]
+        T4["apply_deductions"]
+        T5["search_employees"]
+        T6["get_leave_balance"]
+        T7["get_department_payroll"]
+    end
+
+    subgraph LLM_PROVIDER["LLM Provider"]
+        GROQ["Groq API<br/>llama-3.1-8b-instant<br/>(ultra-fast inference)"]
+    end
+
+    subgraph DATA["Data Stores"]
+        PG[("PostgreSQL 16<br/>+ pgvector")]
+        REDIS[("Redis 7<br/>Cache + Rate Limit")]
+    end
+
+    subgraph RAG["RAG System (src/rag/)"]
+        EMBED["Embeddings<br/>(OpenAI)"]
+        VECTOR["Vector Store<br/>(pgvector)"]
+        RETRIEVER["Hybrid Retriever<br/>(vector + keyword)"]
+    end
+
+    subgraph MEMORY["Memory (src/memory/)"]
+        CONV["Conversation Memory<br/>(sliding window)"]
+        SUMMARY["Summarization<br/>(LLM compression)"]
+    end
+
+    subgraph OBSERVE["Observability (src/observability/)"]
+        TRACE["OpenTelemetry<br/>Tracing"]
+        METRICS["Prometheus<br/>Metrics"]
+        LOGS["structlog<br/>JSON Logging"]
+    end
+
+    %% Main flow
+    UI -->|"WebSocket"| WS_CLIENT
+    WS_CLIENT -->|"JSON message"| WS_EP
+    WS_EP --> JWT
+    JWT -->|"valid token"| RBAC
+    RBAC -->|"authorized"| GUARD_IN
+    PII_IN --> INJECTION --> LENGTH
+    LENGTH -->|"clean input"| ROUTER
+
+    %% Router classification
+    ROUTER -->|"LLM classify"| GROQ
+    ROUTER -->|"payroll/employee"| PAYROLL_A
+    ROUTER -->|"compliance"| COMPLIANCE_A
+    ROUTER -->|"general"| GENERAL_A
+
+    %% Payroll agent flow
+    PAYROLL_A -->|"call LLM"| GROQ
+    PAYROLL_A -->|"execute tools"| TOOLS
+    T1 & T2 & T3 & T4 & T5 & T6 & T7 -->|"query"| PG
+    COMPLIANCE_A -->|"LLM call"| GROQ
+    GENERAL_A -->|"LLM call"| GROQ
+
+    %% RAG
+    RETRIEVER -->|"embed query"| EMBED
+    RETRIEVER -->|"search"| VECTOR
+    VECTOR -->|"read vectors"| PG
+
+    %% Memory
+    CONV -->|"store/fetch"| PG
+    SUMMARY -->|"compress"| GROQ
+
+    %% Callbacks back to UI
+    PAYROLL_A -->|"emit events"| CALLBACK
+    CALLBACK -->|"stream events"| WS_EP
+    WS_EP -->|"reasoning + response"| WS_CLIENT
+    WS_CLIENT --> RENDER
+
+    %% Caching
+    REDIS -.->|"cache embeddings"| EMBED
+    REDIS -.->|"rate limiting"| JWT
+
+    %% Observability
+    TRACE -.->|"trace spans"| FASTAPI
+    METRICS -.->|"counters/histograms"| FASTAPI
+    LOGS -.->|"structured logs"| FASTAPI
+
+    %% Styling
+    classDef browser fill:#1f6feb,stroke:#58a6ff,color:#fff
+    classDef api fill:#238636,stroke:#3fb950,color:#fff
+    classDef agent fill:#8957e5,stroke:#d2a8ff,color:#fff
+    classDef tool fill:#da3633,stroke:#f85149,color:#fff
+    classDef data fill:#d29922,stroke:#f0883e,color:#000
+    classDef llm fill:#1f6feb,stroke:#58a6ff,color:#fff
+    classDef observe fill:#388bfd,stroke:#58a6ff,color:#fff
+
+    class UI,WS_CLIENT,RENDER browser
+    class WS_EP,HTTP_EP,SSE_EP,JWT,RBAC,PII_IN,INJECTION,LENGTH api
+    class ROUTER,PAYROLL_A,COMPLIANCE_A,GENERAL_A,CALLBACK agent
+    class T1,T2,T3,T4,T5,T6,T7 tool
+    class PG,REDIS data
+    class GROQ llm
+    class TRACE,METRICS,LOGS observe
+        </pre>
+    </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- DIAGRAM 2: Agent Logic (LangGraph ReAct Loop)                         -->
+<!-- ===================================================================== -->
+<div id="diagram-agent" class="diagram">
+    <div class="diagram-container">
+        <h2>Agent Internal Logic — LangGraph ReAct Loop</h2>
+        <p class="desc">The payroll agent's StateGraph: how the LLM reasons, calls tools, and loops until done.</p>
+        <pre class="mermaid">
+flowchart TB
+    START((START))
+    END_NODE((END))
+
+    subgraph ROUTER_PHASE["Phase 1: Intent Classification"]
+        CLASSIFY["Router Agent<br/>classify_intent()<br/><br/>LLM classifies user message<br/>→ payroll / employee / compliance / general"]
+    end
+
+    subgraph PAYROLL_GRAPH["Phase 2: Payroll Agent (LangGraph StateGraph)"]
+        direction TB
+        AGENT_NODE["'agent' Node<br/>call_model()<br/><br/>LLM receives:<br/>• System prompt<br/>• Conversation history<br/>• Available tools<br/><br/>LLM decides:<br/>→ Call tools? Or respond?"]
+
+        CONDITION{"should_continue()<br/><br/>Has tool_calls?"}
+
+        TOOL_NODE["'tools' Node<br/>ToolNode(PAYROLL_TOOLS)<br/><br/>Executes each tool call:<br/>• get_employee_info<br/>• calculate_net_pay<br/>• apply_deductions<br/>• etc.<br/><br/>Returns ToolMessage results"]
+    end
+
+    subgraph STATE["PayrollAgentState (TypedDict)"]
+        MSG["messages: list<br/><br/>Annotated with add_messages reducer<br/>→ messages APPEND, never replace<br/><br/>Contains:<br/>SystemMessage → prompt<br/>HumanMessage → user input<br/>AIMessage → LLM reasoning<br/>ToolMessage → tool results"]
+    end
+
+    START --> CLASSIFY
+    CLASSIFY -->|"payroll or employee"| AGENT_NODE
+    AGENT_NODE --> CONDITION
+    CONDITION -->|"Yes: tool_calls present"| TOOL_NODE
+    CONDITION -->|"No: final text response"| END_NODE
+    TOOL_NODE -->|"results added to state"| AGENT_NODE
+
+    %% State flows through
+    STATE -.->|"flows through"| AGENT_NODE
+    STATE -.->|"flows through"| TOOL_NODE
+
+    classDef start fill:#238636,stroke:#3fb950,color:#fff
+    classDef end_style fill:#da3633,stroke:#f85149,color:#fff
+    classDef node fill:#8957e5,stroke:#d2a8ff,color:#fff
+    classDef condition fill:#d29922,stroke:#f0883e,color:#000
+    classDef state fill:#1f6feb,stroke:#58a6ff,color:#fff
+
+    class START start
+    class END_NODE end_style
+    class CLASSIFY,AGENT_NODE,TOOL_NODE node
+    class CONDITION condition
+    class MSG state
+        </pre>
+    </div>
+
+    <div class="diagram-container" style="margin-top: 1rem;">
+        <h2>ReAct Loop Example — "Calculate net pay for EMP001"</h2>
+        <p class="desc">Concrete example showing how the agent reasons through a payroll calculation step by step.</p>
+        <pre class="mermaid">
+sequenceDiagram
+    participant U as User
+    participant R as Router Agent
+    participant A as Payroll Agent (LLM)
+    participant T as Tool Node
+    participant DB as PostgreSQL
+    participant G as Groq API
+
+    U->>R: "Calculate net pay for EMP001"
+    R->>G: classify_intent()
+    G-->>R: "payroll" (0.95)
+
+    Note over A: Loop 1: LLM decides to get employee info first
+    R->>A: invoke(messages=[HumanMessage])
+    A->>G: call_model() with tools
+    G-->>A: AIMessage with tool_calls: [get_employee_info("EMP001")]
+
+    Note over T: should_continue() → "tools"
+    A->>T: Execute get_employee_info("EMP001")
+    T->>DB: SELECT * FROM employees WHERE code='EMP001'
+    DB-->>T: {name: "Amina", salary: 72000, tax_rate: 0.22, ...}
+    T-->>A: ToolMessage with employee data
+
+    Note over A: Loop 2: LLM now calculates with real data
+    A->>G: call_model() with updated messages
+    G-->>A: AIMessage with tool_calls: [calculate_net_pay("EMP001", "2025-01")]
+
+    Note over T: should_continue() → "tools"
+    A->>T: Execute calculate_net_pay("EMP001", "2025-01")
+    T->>DB: Fetch salary, deductions
+    T-->>A: ToolMessage: {gross: 6000, tax: 1320, net: 4130, ...}
+
+    Note over A: Loop 3: LLM has all data, generates response
+    A->>G: call_model() with all results
+    G-->>A: AIMessage: "Amina's net pay for January is $4,130.00..."
+
+    Note over A: should_continue() → END (no tool_calls)
+    A-->>U: Final response with breakdown
+        </pre>
+    </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- DIAGRAM 3: Data Stores                                                 -->
+<!-- ===================================================================== -->
+<div id="diagram-data" class="diagram">
+    <div class="diagram-container">
+        <h2>Data Store Architecture — What Goes Where</h2>
+        <p class="desc">PostgreSQL handles persistent data + vectors. Redis handles ephemeral state + caching.</p>
+        <pre class="mermaid">
+erDiagram
+    employees {
+        uuid id PK
+        string employee_code UK
+        string full_name
+        string email
+        string department
+        string position
+        decimal annual_salary
+        decimal tax_rate
+        decimal health_insurance
+        decimal retirement_rate
+        int pto_days_total
+        int pto_days_used
+    }
+
+    payroll_runs {
+        uuid id PK
+        uuid employee_id FK
+        string period
+        decimal gross_pay
+        decimal tax_amount
+        decimal net_pay
+        string status
+    }
+
+    payroll_items {
+        uuid id PK
+        uuid payroll_run_id FK
+        string item_type
+        string description
+        decimal amount
+    }
+
+    agent_executions {
+        uuid id PK
+        string thread_id
+        string user_id
+        string agent_type
+        text user_input
+        text agent_response
+        json tools_used
+        int duration_ms
+        string status
+    }
+
+    approvals {
+        uuid id PK
+        uuid execution_id FK
+        string status
+        string risk_level
+        json payload
+        string requested_by
+        string decided_by
+        text reason
+    }
+
+    tool_audit_log {
+        uuid id PK
+        uuid execution_id FK
+        string tool_name
+        json input_params
+        json output_result
+        int duration_ms
+        string status
+    }
+
+    conversation_history {
+        uuid id PK
+        string thread_id
+        string role
+        text content
+        json metadata
+        timestamp created_at
+    }
+
+    documents {
+        uuid id PK
+        text content
+        vector embedding
+        json metadata
+        string source
+        string chunk_index
+    }
+
+    users {
+        uuid id PK
+        string username UK
+        string hashed_password
+        string role
+        boolean is_active
+    }
+
+    employees ||--o{ payroll_runs : "has"
+    payroll_runs ||--o{ payroll_items : "contains"
+    agent_executions ||--o| approvals : "may need"
+    agent_executions ||--o{ tool_audit_log : "logs"
+        </pre>
+    </div>
+
+    <div class="diagram-container" style="margin-top: 1rem;">
+        <h2>Redis Cache Layers</h2>
+        <pre class="mermaid">
+flowchart LR
+    subgraph REDIS["Redis 7 — In-Memory Store"]
+        direction TB
+        RL["rate_limit:user_id<br/>─────────────<br/>Request counter<br/>TTL: 1 hour<br/>Purpose: 100 req/hr limit"]
+        EC["embedding:hash<br/>─────────────<br/>Cached embeddings<br/>TTL: 1 hour<br/>Purpose: Avoid recomputation"]
+        RC["response:query_hash<br/>─────────────<br/>Cached LLM responses<br/>TTL: 15 min<br/>Purpose: Fast repeated queries"]
+        SS["session:thread_id<br/>─────────────<br/>Active session state<br/>TTL: 30 min<br/>Purpose: WebSocket state"]
+    end
+
+    AUTH["Auth Middleware"] -->|"check limit"| RL
+    RAG["RAG Embeddings"] -->|"cache lookup"| EC
+    AGENT["Agent Response"] -->|"cache hit?"| RC
+    WS["WebSocket"] -->|"session data"| SS
+
+    classDef redis fill:#da3633,stroke:#f85149,color:#fff
+    class RL,EC,RC,SS redis
+        </pre>
+    </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- DIAGRAM 4: Component Map                                               -->
+<!-- ===================================================================== -->
+<div id="diagram-components" class="diagram">
+    <div class="diagram-container">
+        <h2>Component Architecture — Module Dependencies</h2>
+        <p class="desc">How every Python module connects to others. Arrows show "depends on" relationships.</p>
+        <pre class="mermaid">
+flowchart TB
+    subgraph FRONTEND["Frontend (frontend/)"]
+        HTML["index.html"]
+        CSS["styles.css"]
+        JS["app.js<br/>WebSocket client"]
+    end
+
+    subgraph API["API Layer (src/api/)"]
+        MAIN["main.py<br/>FastAPI app + static files"]
+        ROUTER_API["router.py<br/>Aggregates all routers"]
+        WS_API["websocket.py<br/>WS /agents/ws/"]
+        STREAM_API["stream.py<br/>SSE /agents/stream"]
+        AGENTS_API["agents.py<br/>POST /agents/execute"]
+        EMP_API["employees.py<br/>CRUD /employees"]
+        PAY_API["payroll.py<br/>POST /payroll/calculate"]
+        DOC_API["documents.py<br/>POST /documents/ingest"]
+        APP_API["approvals.py<br/>GET/POST /approvals"]
+        AUTH_API["auth.py<br/>POST /auth/token"]
+        HEALTH["health.py<br/>GET /health"]
+    end
+
+    subgraph AGENTS["Agents (src/agents/)"]
+        ROUTER_AG["router_agent.py<br/>Intent classifier"]
+        PAYROLL_AG["payroll_agent.py<br/>LangGraph StateGraph"]
+        CALLBACKS["callbacks.py<br/>StreamingCallbackHandler"]
+        STATE["state.py<br/>AgentState TypedDict"]
+    end
+
+    subgraph TOOLS_MOD["Tools (src/tools/)"]
+        PAY_TOOLS["payroll_tools.py<br/>7 @tool functions"]
+        REGISTRY["registry.py<br/>Tool registry"]
+    end
+
+    subgraph AUTH_MOD["Auth (src/auth/)"]
+        JWT_MOD["jwt.py<br/>Token create/verify"]
+        DEPS["dependencies.py<br/>FastAPI Depends()"]
+        RBAC_MOD["rbac.py<br/>Permission matrix"]
+    end
+
+    subgraph DB["Database (src/db/)"]
+        ENGINE["engine.py<br/>Async SQLAlchemy"]
+        MODELS["models.py<br/>10 ORM models"]
+        REPOS["repositories.py<br/>Data access layer"]
+    end
+
+    subgraph RAG_MOD["RAG (src/rag/)"]
+        EMBEDDINGS["embeddings.py<br/>OpenAI embeddings"]
+        VSTORE["vectorstore.py<br/>pgvector operations"]
+        RETRIEVER_MOD["retriever.py<br/>Hybrid retriever"]
+        INGEST["ingestion.py<br/>Document pipeline"]
+    end
+
+    subgraph MEM["Memory (src/memory/)"]
+        CONV_MEM["conversation.py<br/>Sliding window"]
+        LONG_TERM["long_term.py<br/>Semantic memory"]
+    end
+
+    subgraph GUARD["Guardrails (src/guardrails/)"]
+        INPUT_V["input_validator.py<br/>PII + injection"]
+        TOOL_GOV["tool_governor.py<br/>Access control"]
+        OUTPUT_V["output_validator.py<br/>Response checks"]
+        APPROVAL["approval_workflow.py<br/>Human-in-the-loop"]
+    end
+
+    subgraph OBS["Observability (src/observability/)"]
+        TRACING["tracing.py<br/>OpenTelemetry"]
+        METRICS_MOD["metrics.py<br/>Prometheus"]
+        LOGGING["logging.py<br/>structlog"]
+    end
+
+    subgraph CACHE_MOD["Cache (src/cache/)"]
+        REDIS_CLIENT["redis_client.py<br/>Connection pool"]
+    end
+
+    subgraph CONFIG["Config"]
+        SETTINGS["config.py<br/>Pydantic Settings"]
+        ENV[".env<br/>Environment vars"]
+    end
+
+    %% Dependencies
+    MAIN --> ROUTER_API
+    ROUTER_API --> WS_API & STREAM_API & AGENTS_API & EMP_API & DOC_API & APP_API & AUTH_API & HEALTH
+    WS_API --> ROUTER_AG & CALLBACKS
+    AGENTS_API --> ROUTER_AG
+    STREAM_API --> ROUTER_AG & CALLBACKS
+    ROUTER_AG --> PAYROLL_AG
+    PAYROLL_AG --> PAY_TOOLS & STATE
+    PAY_TOOLS --> REPOS
+    REPOS --> ENGINE & MODELS
+    RETRIEVER_MOD --> EMBEDDINGS & VSTORE
+    VSTORE --> ENGINE
+    CONV_MEM --> REPOS
+    APPROVAL --> REPOS
+    AGENTS_API --> AUTH_MOD
+    AUTH_API --> JWT_MOD
+    SETTINGS --> ENV
+
+    classDef frontend fill:#1f6feb,stroke:#58a6ff,color:#fff
+    classDef api fill:#238636,stroke:#3fb950,color:#fff
+    classDef agent fill:#8957e5,stroke:#d2a8ff,color:#fff
+    classDef data fill:#d29922,stroke:#f0883e,color:#000
+    classDef safety fill:#da3633,stroke:#f85149,color:#fff
+
+    class HTML,CSS,JS frontend
+    class MAIN,ROUTER_API,WS_API,STREAM_API,AGENTS_API,EMP_API,PAY_API,DOC_API,APP_API,AUTH_API,HEALTH api
+    class ROUTER_AG,PAYROLL_AG,CALLBACKS,STATE agent
+    class ENGINE,MODELS,REPOS data
+    class INPUT_V,TOOL_GOV,OUTPUT_V,APPROVAL safety
+        </pre>
+    </div>
+</div>
+
+<!-- ===================================================================== -->
+<!-- DIAGRAM 5: WebSocket Event Flow                                        -->
+<!-- ===================================================================== -->
+<div id="diagram-websocket" class="diagram">
+    <div class="diagram-container">
+        <h2>WebSocket Event Flow — Real-Time Reasoning Streaming</h2>
+        <p class="desc">How agent reasoning steps are streamed to the browser via WebSocket events.</p>
+        <pre class="mermaid">
+sequenceDiagram
+    participant B as Browser (app.js)
+    participant WS as WebSocket Endpoint
+    participant CB as StreamingCallbackHandler
+    participant RA as Router Agent
+    participant PA as Payroll Agent
+    participant T as Tools
+    participant G as Groq API
+
+    B->>WS: connect /agents/ws/thread-123
+    WS-->>B: connection accepted
+
+    B->>WS: {"type": "message", "content": "Calculate pay for EMP001"}
+
+    Note over WS,CB: Create callback + start agent task
+
+    WS->>CB: emit("reasoning", "classifying", {status: "running"})
+    CB-->>WS: event queued
+    WS-->>B: {"event_type": "reasoning", "step": "classifying", "data": {"status": "running"}}
+    Note over B: UI: ⏳ Classifying intent...
+
+    WS->>RA: classify_intent("Calculate pay for EMP001")
+    RA->>G: LLM classification call
+    G-->>RA: "payroll"
+
+    WS->>CB: emit("reasoning", "classifying", {status: "done", agent: "payroll"})
+    CB-->>WS: event queued
+    WS-->>B: {"event_type": "reasoning", "step": "classifying", "data": {"status": "done", "agent": "payroll"}}
+    Note over B: UI: ✓ Classified as: payroll (95%)
+
+    WS->>CB: emit("reasoning", "routing", {target: "payroll"})
+    WS-->>B: {"event_type": "reasoning", "step": "routing", ...}
+    Note over B: UI: ✓ Routing to: payroll agent
+
+    WS->>PA: payroll_graph.ainvoke(messages)
+    PA->>G: call_model() with tools
+    G-->>PA: AIMessage with tool_calls
+
+    PA->>T: get_employee_info("EMP001")
+    WS->>CB: emit("tool_call", "executing_tool", {tool: "get_employee_info"})
+    WS-->>B: {"event_type": "tool_call", ...}
+    Note over B: UI: ✓ Tool: get_employee_info({"employee_code":"EMP001"})
+
+    PA->>T: calculate_net_pay("EMP001", "2025-01")
+    WS->>CB: emit("tool_call", "executing_tool", {tool: "calculate_net_pay"})
+    WS-->>B: {"event_type": "tool_call", ...}
+    Note over B: UI: ✓ Tool: calculate_net_pay(...)
+
+    PA->>G: call_model() with results
+    G-->>PA: Final AIMessage (text response)
+
+    WS->>CB: emit("message", "response", {content: "Amina's net pay is $4,130..."})
+    WS-->>B: {"event_type": "message", "data": {"content": "..."}}
+    Note over B: UI: Agent response rendered
+
+    WS->>CB: done({duration_ms: 3200, tools_used: [...]})
+    WS-->>B: {"event_type": "done", "data": {"duration_ms": 3200, ...}}
+    Note over B: UI: Stats footer: 3.2s | 2 tools | payroll
+        </pre>
+    </div>
+</div>
+
+<div class="legend">
+    <div class="legend-item"><span class="legend-color" style="background:#1f6feb"></span> Frontend / Browser</div>
+    <div class="legend-item"><span class="legend-color" style="background:#238636"></span> API / Backend</div>
+    <div class="legend-item"><span class="legend-color" style="background:#8957e5"></span> Agent System</div>
+    <div class="legend-item"><span class="legend-color" style="background:#da3633"></span> Tools / Guardrails</div>
+    <div class="legend-item"><span class="legend-color" style="background:#d29922"></span> Data Stores</div>
+</div>
+
+<footer>
+    HR Payroll Agent System — Vane LLC — Built with LangGraph, FastAPI, PostgreSQL, Groq, Redis
+</footer>
+
+<script>
+    // Initialize Mermaid with dark theme
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: 'dark',
+        themeVariables: {
+            primaryColor: '#8957e5',
+            primaryTextColor: '#e6edf3',
+            primaryBorderColor: '#d2a8ff',
+            lineColor: '#8b949e',
+            secondaryColor: '#238636',
+            tertiaryColor: '#1f6feb',
+            fontSize: '14px',
+        },
+        flowchart: {
+            htmlLabels: true,
+            curve: 'basis',
+            useMaxWidth: true,
+        },
+        sequence: {
+            useMaxWidth: true,
+            actorMargin: 50,
+            messageMargin: 40,
+        },
+    });
+
+    // Render all diagrams
+    async function renderDiagrams() {
+        const diagrams = document.querySelectorAll('.mermaid');
+        for (let i = 0; i < diagrams.length; i++) {
+            const el = diagrams[i];
+            const id = 'mermaid-' + i;
+            try {
+                const { svg } = await mermaid.render(id, el.textContent);
+                el.innerHTML = svg;
+            } catch (e) {
+                console.error('Mermaid render error for diagram ' + i, e);
+            }
+        }
+    }
+
+    renderDiagrams();
+
+    // Tab switching
+    function showDiagram(name) {
+        document.querySelectorAll('.diagram').forEach(d => d.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('diagram-' + name).classList.add('active');
+        event.target.classList.add('active');
+    }
+</script>
+
+</body>
+</html>

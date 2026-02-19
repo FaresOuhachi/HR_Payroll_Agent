@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<!--
+=============================================================================
+HR Payroll Agent — Chat Interface
+=============================================================================
+CONCEPT: Single-Page Application (SPA)
+
+This is a lightweight chat interface with NO build step required.
+It connects to the FastAPI backend via WebSocket for real-time communication.
+
+KEY FEATURES:
+  1. Chat input/output — Send messages, see responses
+  2. Reasoning panel — See the agent's step-by-step thinking process
+  3. Stats footer — Token count, latency, tools used per message
+  4. Login form — JWT authentication
+  5. Thread selector — Multi-turn conversations
+  6. Dark/light mode toggle
+
+The frontend is served directly by FastAPI's StaticFiles middleware.
+No React, no webpack, no npm — just HTML + CSS + vanilla JS.
+=============================================================================
+-->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Payroll Agent</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- ================================================================= -->
+    <!-- Login Screen -->
+    <!-- ================================================================= -->
+    <div id="login-screen" class="screen">
+        <div class="login-container">
+            <h1>HR Payroll Agent</h1>
+            <p class="subtitle">Agentic AI for HR & Payroll Automation</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="admin" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="admin123" value="admin123" required>
+                </div>
+                <button type="submit" class="btn-primary">Sign In</button>
+                <p id="login-error" class="error-text"></p>
+            </form>
+            <div class="login-hint">
+                <p>Demo credentials:</p>
+                <code>admin / admin123</code> |
+                <code>manager / manager123</code> |
+                <code>employee / employee123</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================================================================= -->
+    <!-- Chat Screen -->
+    <!-- ================================================================= -->
+    <div id="chat-screen" class="screen hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>HR Payroll Agent</h2>
+                <button id="theme-toggle" class="icon-btn" title="Toggle theme">
+                    <span id="theme-icon">&#9790;</span>
+                </button>
+            </div>
+
+            <!-- Thread List -->
+            <div class="thread-list">
+                <button id="new-thread-btn" class="btn-secondary">+ New Chat</button>
+                <div id="threads"></div>
+            </div>
+
+            <!-- User Info -->
+            <div class="user-info">
+                <span id="user-display"></span>
+                <button id="logout-btn" class="btn-text">Logout</button>
+            </div>
+
+            <!-- Quick Examples -->
+            <div class="examples">
+                <p class="examples-title">Try asking:</p>
+                <button class="example-btn" data-query="Calculate net pay for employee EMP001">Calculate net pay for EMP001</button>
+                <button class="example-btn" data-query="How much PTO does Amina Benali have left?">PTO balance for Amina</button>
+                <button class="example-btn" data-query="What is the total payroll cost for the Engineering department?">Engineering dept payroll</button>
+                <button class="example-btn" data-query="What is the maximum PTO carryover allowed?">Max PTO carryover?</button>
+                <button class="example-btn" data-query="Show me all employees in the Finance department">Finance employees</button>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+            <!-- Messages -->
+            <div id="messages" class="messages-container">
+                <div class="welcome-message">
+                    <h2>Welcome to the HR Payroll Agent</h2>
+                    <p>I can help you with payroll calculations, employee information,
+                       leave balances, and HR policy questions.</p>
+                    <p>Try one of the examples in the sidebar, or type your question below.</p>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-area">
+                <div class="input-container">
+                    <textarea id="user-input"
+                              placeholder="Ask about payroll, employees, or HR policies..."
+                              rows="1"
+                              autofocus></textarea>
+                    <button id="send-btn" class="btn-send" title="Send message">
+                        &#10148;
+                    </button>
+                </div>
+                <p class="input-hint">Press Enter to send, Shift+Enter for new line</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

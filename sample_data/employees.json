@@ -1,0 +1,232 @@
+[
+  {
+    "employee_code": "EMP001",
+    "full_name": "Amina Benali",
+    "email": "amina.benali@talenteo.com",
+    "department": "Engineering",
+    "position": "Senior Software Engineer",
+    "salary_info": {
+      "annual_salary": 72000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 22,
+      "filing_status": "single",
+      "allowances": 1
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 250,
+      "retirement_pct": 5,
+      "pto_days_total": 25,
+      "pto_days_used": 8
+    }
+  },
+  {
+    "employee_code": "EMP002",
+    "full_name": "Karim Hadj",
+    "email": "karim.hadj@talenteo.com",
+    "department": "Engineering",
+    "position": "Backend Developer",
+    "salary_info": {
+      "annual_salary": 60000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 17,
+      "filing_status": "married",
+      "allowances": 3
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 350,
+      "retirement_pct": 6,
+      "pto_days_total": 25,
+      "pto_days_used": 12
+    }
+  },
+  {
+    "employee_code": "EMP003",
+    "full_name": "Fatima Zerhouni",
+    "email": "fatima.zerhouni@talenteo.com",
+    "department": "Human Resources",
+    "position": "HR Manager",
+    "salary_info": {
+      "annual_salary": 65000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 22,
+      "filing_status": "single",
+      "allowances": 1
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 250,
+      "retirement_pct": 5,
+      "pto_days_total": 28,
+      "pto_days_used": 5
+    }
+  },
+  {
+    "employee_code": "EMP004",
+    "full_name": "Youssef Mebarki",
+    "email": "youssef.mebarki@talenteo.com",
+    "department": "Finance",
+    "position": "Financial Analyst",
+    "salary_info": {
+      "annual_salary": 58000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 17,
+      "filing_status": "married",
+      "allowances": 2
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 350,
+      "retirement_pct": 7,
+      "pto_days_total": 22,
+      "pto_days_used": 10
+    }
+  },
+  {
+    "employee_code": "EMP005",
+    "full_name": "Nadia Boudiaf",
+    "email": "nadia.boudiaf@talenteo.com",
+    "department": "Engineering",
+    "position": "Frontend Developer",
+    "salary_info": {
+      "annual_salary": 55000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 17,
+      "filing_status": "single",
+      "allowances": 1
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 250,
+      "retirement_pct": 4,
+      "pto_days_total": 25,
+      "pto_days_used": 15
+    }
+  },
+  {
+    "employee_code": "EMP006",
+    "full_name": "Rachid Tlemcani",
+    "email": "rachid.tlemcani@talenteo.com",
+    "department": "Sales",
+    "position": "Sales Director",
+    "salary_info": {
+      "annual_salary": 80000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 24,
+      "filing_status": "married",
+      "allowances": 4
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 400,
+      "retirement_pct": 8,
+      "pto_days_total": 30,
+      "pto_days_used": 7
+    }
+  },
+  {
+    "employee_code": "EMP007",
+    "full_name": "Samira Khelifi",
+    "email": "samira.khelifi@talenteo.com",
+    "department": "Human Resources",
+    "position": "HR Specialist",
+    "salary_info": {
+      "annual_salary": 48000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 12,
+      "filing_status": "single",
+      "allowances": 1
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 250,
+      "retirement_pct": 4,
+      "pto_days_total": 22,
+      "pto_days_used": 18
+    }
+  },
+  {
+    "employee_code": "EMP008",
+    "full_name": "Omar Djellali",
+    "email": "omar.djellali@talenteo.com",
+    "department": "Engineering",
+    "position": "DevOps Engineer",
+    "salary_info": {
+      "annual_salary": 70000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 22,
+      "filing_status": "single",
+      "allowances": 1
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 250,
+      "retirement_pct": 5,
+      "pto_days_total": 25,
+      "pto_days_used": 3
+    }
+  },
+  {
+    "employee_code": "EMP009",
+    "full_name": "Leila Bensalem",
+    "email": "leila.bensalem@talenteo.com",
+    "department": "Finance",
+    "position": "Payroll Specialist",
+    "salary_info": {
+      "annual_salary": 52000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 17,
+      "filing_status": "married",
+      "allowances": 2
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 350,
+      "retirement_pct": 5,
+      "pto_days_total": 22,
+      "pto_days_used": 9
+    }
+  },
+  {
+    "employee_code": "EMP010",
+    "full_name": "Mehdi Bouazza",
+    "email": "mehdi.bouazza@talenteo.com",
+    "department": "Sales",
+    "position": "Account Executive",
+    "salary_info": {
+      "annual_salary": 50000,
+      "currency": "USD",
+      "pay_frequency": "monthly"
+    },
+    "tax_info": {
+      "tax_bracket": 12,
+      "filing_status": "single",
+      "allowances": 1
+    },
+    "benefits_info": {
+      "health_insurance_monthly": 250,
+      "retirement_pct": 4,
+      "pto_days_total": 22,
+      "pto_days_used": 14
+    }
+  }
+]
