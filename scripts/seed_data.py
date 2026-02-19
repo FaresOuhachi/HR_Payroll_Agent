@@ -53,21 +53,21 @@ async def seed_users(session):
             hashed_password=pwd_context.hash("admin123"),
             role="admin",
             full_name="System Administrator",
-            email="admin@talenteo.com",
+            email="admin@faresouhachi.com",
         ),
         User(
             username="manager",
             hashed_password=pwd_context.hash("manager123"),
             role="manager",
             full_name="Fatima Zerhouni",
-            email="fatima.manager@talenteo.com",
+            email="fatima.manager@faresouhachi.com",
         ),
         User(
             username="employee",
             hashed_password=pwd_context.hash("employee123"),
             role="employee",
             full_name="Amina Benali",
-            email="amina.user@talenteo.com",
+            email="amina.user@faresouhachi.com",
         ),
     ]
 

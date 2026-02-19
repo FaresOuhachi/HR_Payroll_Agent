@@ -2,7 +2,7 @@
   {
     "employee_code": "EMP001",
     "full_name": "Amina Benali",
-    "email": "amina.benali@talenteo.com",
+    "email": "amina.benali@faresouhachi.com",
     "department": "Engineering",
     "position": "Senior Software Engineer",
     "salary_info": {
@@ -25,7 +25,7 @@
   {
     "employee_code": "EMP002",
     "full_name": "Karim Hadj",
-    "email": "karim.hadj@talenteo.com",
+    "email": "karim.hadj@faresouhachi.com",
     "department": "Engineering",
     "position": "Backend Developer",
     "salary_info": {
@@ -48,7 +48,7 @@
   {
     "employee_code": "EMP003",
     "full_name": "Fatima Zerhouni",
-    "email": "fatima.zerhouni@talenteo.com",
+    "email": "fatima.zerhouni@faresouhachi.com",
     "department": "Human Resources",
     "position": "HR Manager",
     "salary_info": {
@@ -71,7 +71,7 @@
   {
     "employee_code": "EMP004",
     "full_name": "Youssef Mebarki",
-    "email": "youssef.mebarki@talenteo.com",
+    "email": "youssef.mebarki@faresouhachi.com",
     "department": "Finance",
     "position": "Financial Analyst",
     "salary_info": {
@@ -94,7 +94,7 @@
   {
     "employee_code": "EMP005",
     "full_name": "Nadia Boudiaf",
-    "email": "nadia.boudiaf@talenteo.com",
+    "email": "nadia.boudiaf@faresouhachi.com",
     "department": "Engineering",
     "position": "Frontend Developer",
     "salary_info": {
@@ -117,7 +117,7 @@
   {
     "employee_code": "EMP006",
     "full_name": "Rachid Tlemcani",
-    "email": "rachid.tlemcani@talenteo.com",
+    "email": "rachid.tlemcani@faresouhachi.com",
     "department": "Sales",
     "position": "Sales Director",
     "salary_info": {
@@ -140,7 +140,7 @@
   {
     "employee_code": "EMP007",
     "full_name": "Samira Khelifi",
-    "email": "samira.khelifi@talenteo.com",
+    "email": "samira.khelifi@faresouhachi.com",
     "department": "Human Resources",
     "position": "HR Specialist",
     "salary_info": {
@@ -163,7 +163,7 @@
   {
     "employee_code": "EMP008",
     "full_name": "Omar Djellali",
-    "email": "omar.djellali@talenteo.com",
+    "email": "omar.djellali@faresouhachi.com",
     "department": "Engineering",
     "position": "DevOps Engineer",
     "salary_info": {
@@ -186,7 +186,7 @@
   {
     "employee_code": "EMP009",
     "full_name": "Leila Bensalem",
-    "email": "leila.bensalem@talenteo.com",
+    "email": "leila.bensalem@faresouhachi.com",
     "department": "Finance",
     "position": "Payroll Specialist",
     "salary_info": {
@@ -209,7 +209,7 @@
   {
     "employee_code": "EMP010",
     "full_name": "Mehdi Bouazza",
-    "email": "mehdi.bouazza@talenteo.com",
+    "email": "mehdi.bouazza@faresouhachi.com",
     "department": "Sales",
     "position": "Account Executive",
     "salary_info": {
